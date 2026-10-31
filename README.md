@@ -7,6 +7,7 @@ Built for **ExaThon India 2026 – Factories, Fleets & Supply Chains**.
 
 > Transform manufacturing data into actionable intelligence.
 
+[Kervyn Explainer Video](https://drive.google.com/file/d/1cy0Y6AMYEqkHEcswEGPnrHtKBU3OD4v2/view?usp=sharing)
 ---
 
 ## Overview
