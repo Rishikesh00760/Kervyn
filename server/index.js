@@ -375,7 +375,7 @@ function sendError(res, error) {
   res.status(500).json({
     error: 'An internal server or database error occurred.',
   });
-
+}
 
 app.get('/api/health', async (_req, res) => {
     try {
