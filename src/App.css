@@ -70,7 +70,6 @@ button {
   background-color: var(--bg-primary);
 }
 
-/* Navigation bar */
 
 .navbar {
   display: flex;
@@ -96,7 +95,6 @@ span.title {
   line-height: 1.4;
 }
 
-/* About button */
 
 .about-btn {
   display: inline-flex;
@@ -138,9 +136,7 @@ span.title {
   outline-offset: 3px;
 }
 
-/* Main dashboard workspace */
 
-/* Main dashboard workspace */
 
 .work-table {
   display: flex;
@@ -155,44 +151,36 @@ span.title {
   gap: 20px;
   padding: 8px;
 
-  /* Prevent the entire dashboard from scrolling */
   overflow: hidden;
   overscroll-behavior: none;
 
-  /* Prevent browser scroll anchoring */
   overflow-anchor: none;
 }
 
-/* Keep child components within the available workspace */
 
 .work-table > * {
   flex: 1 1 0;
   min-width: 0;
   min-height: 0;
 
-  /* Allow individual components to handle scrolling */
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* Prevent content expansion from shifting the workspace */
   overflow-anchor: none;
 }
 
-/* Consistent text selection */
 
 ::selection {
   color: var(--bg-primary);
   background-color: var(--accent);
 }
 
-/* Scrollbars - Firefox */
 
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-/* Scrollbars - Chrome, Edge and Safari */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -218,7 +206,6 @@ span.title {
   background: var(--scrollbar-track);
 }
 
-/* Responsive layout */
 
 @media (max-width: 768px) {
   .container {
