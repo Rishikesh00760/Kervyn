@@ -182,7 +182,6 @@ const exportRef = useRef(null);
     return `conic-gradient(${stops.join(', ')})`;
   })();
 
-  // A wider viewBox gives long category labels more room.
   const width = Math.max(600, data.length * 82);
   const height = 340;
   const margin = { top: 24, right: 20, bottom: 82, left: 48 };
@@ -650,7 +649,6 @@ function AIBox() {
     };
   }, [loadAnalytics]);
 
-  // Automatically scroll ONLY the AI conversation container.
 useEffect(() => {
   const conversation = conversationRef.current;
 
@@ -668,7 +666,6 @@ useEffect(() => {
 
       if (!text || sendingRef.current) return;
 
-      // Lock immediately, before React schedules a render.
       sendingRef.current = true;
 
       setInput('');
