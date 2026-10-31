@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import tls from 'node:tls';
 import { writeFileSync } from 'node:fs';
 
