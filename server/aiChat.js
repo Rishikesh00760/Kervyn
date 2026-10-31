@@ -16,10 +16,6 @@ const REQUEST_TIMEOUT_MS = 90_000;
 
 const sessions = new Map();
 
-// --------------------------------------------------
-// Actual KERVYN schema from your uploaded index.js
-// --------------------------------------------------
-
 const TABLES = {
   PRODUCT: {
     alias: 'P',
@@ -161,13 +157,6 @@ const TABLES = {
   },
 };
 
-// --------------------------------------------------
-// Explicit relationships
-//
-// Each relationship is defined by the real foreign-key
-// columns from the uploaded KERVYN table definitions.
-// --------------------------------------------------
-
 const JOINS = [
   ['PRODUCT', 'WORK_ORDER', 'PRODUCT_ID', 'PRODUCT_ID'],
   ['PRODUCT', 'BOARD_UNIT', 'PRODUCT_ID', 'PRODUCT_ID'],
@@ -219,10 +208,6 @@ const OPERATORS = new Set([
   'is_null',
   'is_not_null',
 ]);
-
-// --------------------------------------------------
-// SQL helpers
-// --------------------------------------------------
 
 function normalizeName(value) {
   return String(value || '').trim().toUpperCase();
@@ -287,10 +272,6 @@ function safeRows(rows) {
   });
 }
 
-// --------------------------------------------------
-// Query-plan field validation
-// --------------------------------------------------
-
 function validateField(field, allowedTables) {
   if (!field || typeof field !== 'object') {
     throw new Error('Invalid field in query plan.');
@@ -309,11 +290,6 @@ function validateField(field, allowedTables) {
 
   return { table, column };
 }
-
-
-// --------------------------------------------------
-// Explicit join-path resolver
-// --------------------------------------------------
 
 function findJoinPath(startTable, targetTable, joinedTables) {
   if (joinedTables.has(targetTable)) {
@@ -430,10 +406,6 @@ function compileJoins(baseTable, requestedTables) {
   };
 }
 
-// --------------------------------------------------
-// Query-plan compiler
-// --------------------------------------------------
-
 function compileSelectField(field, allowedTables) {
   const table = normalizeName(field.table);
   const column = normalizeName(field.column);
@@ -548,9 +520,6 @@ function fieldExpression(field, allowedTables) {
   return `${TABLES[table].alias}.${quoteIdentifier(column)}`;
 }
 
-
-// Exasol TIMESTAMP columns in the KERVYN schema.
-// Exasol TIMESTAMP has no timezone; timezone-aware inputs are normalized to UTC.
 const TIMESTAMP_COLUMNS = new Set([
   'PRODUCT.CREATED_AT',
   'WORK_ORDER.STARTED_AT',
@@ -719,9 +688,7 @@ function compileQueryPlan(plan) {
 
   const orderBy = Array.isArray(plan.orderBy) ? plan.orderBy : [];
     if (orderBy.length > 4) throw new Error('Too many ORDER BY fields.');
-
-  // Add tables referenced by fields, filters, column comparisons and ordering.
-  // This prevents Sarvam from silently omitting a referenced table.
+  
   const requiredTables = new Set(requestedTables);
   for (const field of plan.fields) {
     const table = normalizeName(field?.table);
@@ -757,7 +724,6 @@ function compileQueryPlan(plan) {
     const table = normalizeName(item?.table);
     const column = normalizeName(item?.column);
 
-    // ORDER BY may refer to a selected output alias.
     const selectedByAlias = plan.fields.some((field) => {
       const fieldAlias = normalizeName(
         field?.alias ||
@@ -775,7 +741,6 @@ function compileQueryPlan(plan) {
       continue;
     }
 
-    // Otherwise, require a valid physical table and column.
     if (!TABLES[table] || !TABLES[table].columns.includes(column)) {
       throw new Error(`Unknown ORDER BY field ${table}.${column}.`);
     }
@@ -794,16 +759,12 @@ function compileQueryPlan(plan) {
 
   const joinResult = compileJoins(baseTable, [...requiredTables]);
 
-  // compileJoins may insert approved intermediate bridge tables. Compare
-  // required tables by membership, not by set size.
   for (const table of requiredTables) {
     if (!joinResult.joined.has(table)) {
       throw new Error(`Not all required tables could be joined. Missing ${table}.`);
     }
   }
 
-  // Include bridge tables in the allowed set so validated field resolution
-  // works for any fields that legitimately reference a bridge.
   const allowedTables = joinResult.joined;
 
   const fields = plan.fields.map((field) => {
@@ -874,7 +835,6 @@ function compileQueryPlan(plan) {
     ? filters.map((filter) => compileFilter(filter, allowedTables)).join('\n AND ')
     : '';
 
-  // Keep ORDER BY restricted to selected output fields, using their aliases.
   const orderSql = orderBy.map((item) => {
   const requestedAlias = normalizeName(item.alias || item.column);
   const table = normalizeName(item.table);
@@ -927,9 +887,6 @@ function compileQueryPlan(plan) {
   };
 }
 
-// --------------------------------------------------
-// Sarvam API
-// --------------------------------------------------
 
 async function requestSarvam(messages, signal, maxTokens = 2000) {
   if (!SARVAM_API_KEY) {
@@ -994,9 +951,6 @@ function parseAIJson(content) {
     return JSON.parse(cleaned.slice(start, end + 1));
 }
 
-// --------------------------------------------------
-// AI query planner
-// --------------------------------------------------
 
 function buildSchemaDescription() {
   return Object.entries(TABLES)
@@ -1179,10 +1133,6 @@ Return ONLY JSON in this format:
   return plan;
 }
 
-// --------------------------------------------------
-// Visual normalization
-// Compatible with your existing AIBox visuals format
-// --------------------------------------------------
 
 function firstDefined(...values) {
   return values.find(
@@ -1304,9 +1254,6 @@ function normalizeVisuals(visuals) {
   });
 }
 
-// --------------------------------------------------
-// Fallback visuals from actual Exasol result rows
-// --------------------------------------------------
 
 function buildFallbackVisuals(rows, message) {
   if (!rows.length) return [];
@@ -1374,9 +1321,6 @@ function buildFallbackVisuals(rows, message) {
   }];
 }
 
-// --------------------------------------------------
-// Final analytical answer
-// --------------------------------------------------
 
 async function generateAnswer(
   message,
@@ -1491,9 +1435,6 @@ Never fabricate database values.
   };
 }
 
-// --------------------------------------------------
-// Session helpers
-// --------------------------------------------------
 
 function getOrCreateSession(requestedId) {
     if (
@@ -1525,9 +1466,6 @@ function getOrCreateSession(requestedId) {
   return { sessionId, session };
 }
 
-// --------------------------------------------------
-// Express router
-// --------------------------------------------------
 
 export function createAiChatRouter({ db }) {
   if (typeof db !== 'function') {
@@ -1577,7 +1515,6 @@ export function createAiChatRouter({ db }) {
       session,
     } = getOrCreateSession(req.body?.sessionId);
 
-    // Prevent concurrent requests from changing the same conversation history.
 if (session.inFlight) {
   return res.status(409).json({
     error: 'Another request is already being processed in this conversation. Please wait.',
@@ -1586,7 +1523,6 @@ if (session.inFlight) {
 
 session.inFlight = true;
 
-// Use a stable snapshot throughout this request.
 const historySnapshot = session.history.slice(-MAX_HISTORY);
 
     const controller = new AbortController();
@@ -1597,7 +1533,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
     );
 
     try {
-      // 1. Generate a structured query plan.
       const plan = await generateQueryPlan(
         message.trim(),
         historySnapshot,
@@ -1624,7 +1559,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
         });
       }
 
-      // 2. Validate the query plan and compile SQL locally.
       const compiled = compileQueryPlan(plan);
 
       if (process.env.NODE_ENV === 'development') {
@@ -1633,8 +1567,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
   console.log('\n[KERVYN AI TABLES]', compiled.tables);
 }
 
-      // 3. Execute the compiled SELECT query against Exasol.
-      // The existing db(sql) function returns result.getRows().
       const databaseRows = await db(compiled.sql);
 
       const rows = safeRows(databaseRows);
@@ -1645,7 +1577,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
         rows,
       };
 
-      // 4. Generate a grounded analytical answer.
       const analysis = await generateAnswer(
         message.trim(),
         evidence,
@@ -1656,7 +1587,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
 
       let visuals = analysis.visuals;
 
-      // 5. Fallback visualization if the model returned none.
       const explicitlyRequestsVisual =
         /\b(chart|graph|plot|visuali[sz]e|pie|doughnut|donut|table|tabular)\b/i
           .test(message);
@@ -1688,7 +1618,6 @@ const historySnapshot = session.history.slice(-MAX_HISTORY);
         })),
       });
 
-      // Preserve the existing AIBox response contract.
       return res.json({
         reply: analysis.reply,
         visuals,
