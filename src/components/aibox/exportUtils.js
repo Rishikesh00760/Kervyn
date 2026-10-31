@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
@@ -43,7 +42,6 @@ export function downloadCsv(columns, rows, filename = 'kervyn-export') {
   const escapeCell = (value) => {
     let text = String(value ?? '');
 
-    // Prevent spreadsheet formula injection for untrusted text.
     if (/^[\s]*[=+\-@]/.test(text)) {
       text = `'${text}`;
     }
@@ -124,7 +122,6 @@ export async function downloadConversationPdf(element) {
   const printableWidth = pageWidth - margin * 2;
   const printableHeight = pageHeight - margin * 2;
 
-  // Convert each PDF page's height into source-canvas pixels.
   const pageSliceHeight = Math.floor(
     (printableHeight / printableWidth) * canvas.width
   );
