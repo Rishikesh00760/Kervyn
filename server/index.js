@@ -1,4 +1,3 @@
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -23,9 +22,6 @@ if (process.env.FRONTEND_ORIGIN) {
   app.use(cors({ origin: process.env.FRONTEND_ORIGIN }));
 }
 
-// ------------------------------------------------------
-// 1. DATABASE CONNECTION
-// ------------------------------------------------------
 
 const requiredEnv = [
   'EXASOL_HOST',
@@ -57,7 +53,6 @@ let connected = false;
 let connecting = null;
 let closing = false;
 
-// Serialize operations because this implementation uses one connection.
 let queue = Promise.resolve();
 
 async function connectDB() {
@@ -90,12 +85,7 @@ function db(sql) {
   return operation;
 }
 
-// ------------------------------------------------------
-// 2. TABLE DEFINITIONS AND FIELD ALLOWLISTS
-// ------------------------------------------------------
 
-// These are logical key definitions. Your supplied DDL does
-// not itself declare PRIMARY KEY or UNIQUE constraints.
 
 const tables = {
   products: {
@@ -261,8 +251,6 @@ function tableFor(resource) {
 }
 
 function identifier(name) {
-  // Only fixed identifiers from our server-side allowlists
-  // should reach this function.
   if (!/^[A-Z][A-Z0-9_]*$/.test(name)) {
     throw new Error('Invalid SQL identifier.');
   }
@@ -282,7 +270,6 @@ function sqlValue(value, type) {
   }
 
   if (type === 'int' || type === 'bigint' || type === 'decimal') {
-    // Keep large IDs as strings in JavaScript when necessary.
     const text = String(value);
 
     if (!/^-?\d+(\.\d+)?$/.test(text) || !Number.isFinite(Number(text))) {
@@ -303,7 +290,6 @@ function sqlValue(value, type) {
   if (type === 'timestamp') {
     const text = String(value);
 
-    // Require a valid date/time string before quoting it.
     if (Number.isNaN(Date.parse(text))) {
       throw new Error(`Invalid timestamp: ${text}`);
     }
@@ -389,11 +375,7 @@ function sendError(res, error) {
   res.status(500).json({
     error: 'An internal server or database error occurred.',
   });
-}
 
-// ------------------------------------------------------
-// 3. HEALTH AND DISCOVERY
-// ------------------------------------------------------
 
 app.get('/api/health', async (_req, res) => {
     try {
@@ -419,16 +401,6 @@ app.get('/api/tables', (_req, res) => {
     })),
 });
 });
-
-// ------------------------------------------------------
-// 4. CRUD API
-// ------------------------------------------------------
-
-// GET /api/products?limit=50&offset=0
-// GET /api/products/123
-// POST /api/products
-// PUT /api/products/123
-// DELETE /api/products/123
 
 app.get('/api/analytics', async (req, res) => {
   try {
@@ -952,15 +924,6 @@ app.delete('/api/:resource/:id', async (req, res) => {
   }
 });
 
-// ------------------------------------------------------
-// 5. MANUFACTURING ANALYTICS
-// ------------------------------------------------------
-
-
-// ------------------------------------------------------
-// 6. NOT FOUND AND ERROR HANDLERS
-// ------------------------------------------------------
-
 app.use('/api', (_req, res) => {
   res.status(404).json({ error: 'API endpoint not found.' });
 });
@@ -972,10 +935,6 @@ app.use((error, _req, res, _next) => {
 
   sendError(res, error);
 });
-
-// ------------------------------------------------------
-// 7. STARTUP AND SHUTDOWN
-// ------------------------------------------------------
 
 const server = app.listen(PORT, () => {
   console.log(`Kervyn API running at http://localhost:${PORT}`);
