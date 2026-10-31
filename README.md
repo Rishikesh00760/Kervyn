@@ -275,141 +275,238 @@ Kervyn/
 
 ---
 
-## Getting Started
+---
+
+## Installation and Setup
 
 ### Prerequisites
 
-Make sure the following are available:
-
 - Node.js and npm.
-- Access to an Exasol database.
+- Git.
+- An Exasol database (Exasol Personal is used for the demonstrated deployment).
 - An Exasol account with the required database permissions.
 - A Sarvam AI API key.
-- Network connectivity between the backend server and Exasol.
+- Network connectivity between the Kervyn backend and Exasol.
+- For the Azure deployment: an Azure subscription, Azure CLI, and Exasol Launcher.
 
-### 1. Clone the Repository
+Official resources:
 
-\`\`\`bash
+- [Node.js](https://nodejs.org/)
+- [Git](https://git-scm.com/)
+- [Exasol Personal Documentation](https://docs.exasol.com/db/latest/get_started/exasol_personal.htm)
+- [Exasol Personal Quick Start Guide](https://docs.exasol.com/db/latest/get_started/quick_start_guide.htm)
+- [Exasol Download Portal](https://www.exasol.com/downloads/)
+- [Azure Portal](https://portal.azure.com/)
+- [Azure CLI Installation](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [Sarvam AI](https://www.sarvam.ai/)
+
+### 1. Clone the Repository and Install Dependencies
+
+```bash
 git clone https://github.com/Rishikesh00760/Kervyn.git
 cd Kervyn
-\`\`\`
-
-### 2. Install Dependencies
-
-\`\`\`bash
 npm install
-\`\`\`
+```
 
-### 3. Configure Environment Variables
+### 2. Configure Environment Variables
 
-Create a `.env` file in the project root directory.
+Create a `.env` file in the project root:
 
-\`\`\`env
+```env
 PORT=4000
 
-EXASOL_HOST=your-exasol-hostname
+EXASOL_HOST=exacluster.local
 EXASOL_PORT=8563
-EXASOL_USER=your-exasol-username
-EXASOL_PASSWORD=your-exasol-password
+EXASOL_USER=sys
+EXASOL_PASSWORD=YOUR_EXASOL_PASSWORD
 
 FRONTEND_ORIGIN=http://localhost:5173
 
-SARVAM_API_KEY=your-sarvam-api-key
+SARVAM_API_KEY=YOUR_SARVAM_API_KEY
 SARVAM_MODEL=sarvam-105b
-\`\`\`
+```
 
-Replace the placeholder values with your actual configuration.
+Replace the placeholders with the credentials and configuration for your own deployment. `EXASOL_HOST` must be a hostname that resolves from the machine running the backend; see **Exasol Personal – Azure Deployment and Host Configuration** below.
 
-**Important:** Never commit your actual `.env` file, database credentials or API keys to GitHub.
+**Never commit your actual `.env` file, database password, API keys, private keys, or other deployment secrets to GitHub.** Keep `.env.example` limited to placeholder values.
 
-### 4. Configure Exasol TLS Certificate
+## Exasol Personal – Azure Deployment and Host Configuration
 
-The backend expects the Exasol server certificate at:
+This section describes the Exasol Personal deployment used for Kervyn, including Azure provisioning, hostname mapping, TLS setup, and database initialization.
 
-\`\`\`text
-server/exasol-server.pem
-\`\`\`
+### 1. Create and Configure an Azure Account
 
-The repository includes a certificate retrieval utility.
+1. Open the [Azure Portal](https://portal.azure.com/).
+2. Sign in or create an Azure account.
+3. Create or select an Azure subscription.
+4. Install Azure CLI on your development machine.
+5. Open PowerShell and authenticate:
 
-With a Node.js version supporting `--env-file`, execute:
+```powershell
+az login
+```
 
-\`\`\`bash
-node --env-file=.env server/get-cert.js
-\`\`\`
+6. Verify the selected subscription:
 
-The utility retrieves the peer certificate and saves it in PEM format.
+```powershell
+az account show
+```
 
-**Security note:** The retrieval utility disables certificate verification during the initial certificate retrieval. Verify the displayed SHA-256 fingerprint through a trusted channel before trusting the certificate. The application subsequently uses the saved certificate for its Exasol TLS connection.
+Make sure the intended subscription is selected before deploying Exasol.
 
-Do not publish environment-specific certificates or private keys.
+### 2. Install Exasol Launcher
 
-### 5. Initialize the Exasol Database
+Exasol Personal is installed and managed using the Exasol Launcher command-line utility.
 
-Open `db.sql` using an Exasol-compatible SQL client.
+For Linux or macOS:
 
-Execute the script against your Exasol database to create the KERVYN schema, its tables and sample demonstration records.
+```bash
+curl https://downloads.exasol.com/exasol-personal/installer.sh | sh
+```
 
-The SQL script contains synthetic demonstration data. It is intended for initial development setup and should not be executed repeatedly against an existing database without checking its effects.
+For Windows, download Exasol Launcher from the [Exasol Download Portal](https://www.exasol.com/downloads/) and add the executable to a directory included in your system `PATH`.
 
-### 6. Start the Backend Server
+Verify the installation:
 
-Open a terminal in the project directory.
+```bash
+exasol help
+```
 
-\`\`\`bash
-npm run server:dev
-\`\`\`
+If the command is not recognized, add the installation directory to `PATH` and reopen the terminal.
 
-The backend server runs at:
+### 3. Create a Deployment Directory
 
-\`\`\`text
-http://localhost:4000
-\`\`\`
+Create a dedicated directory for the Exasol deployment and run the deployment commands from it.
 
-### 7. Start the Frontend
+```powershell
+mkdir exasol-deployment
+cd exasol-deployment
+```
 
-Open another terminal.
+Keep this directory and its generated configuration files safe.
 
-\`\`\`bash
-npm run dev
-\`\`\`
+### 4. Deploy Exasol Personal on Azure
 
-Vite normally starts the frontend at:
+For the Kervyn demonstration deployment, the following command was used:
 
-\`\`\`text
-http://localhost:5173
-\`\`\`
+```bash
+exasol install azure ubuntu --location eastus --instance-type Standard_E4s_v4 --cluster-size 1 --blob-archive-enabled=false
+```
 
-Open the displayed local URL in your browser.
+| Parameter | Description |
+|---|---|
+| `azure` | Selects Azure as the deployment platform |
+| `ubuntu` | Selects the Ubuntu installation preset |
+| `--location eastus` | Deploys resources in the East US Azure region |
+| `--instance-type Standard_E4s_v4` | Selects the Azure VM size |
+| `--cluster-size 1` | Creates a single-node cluster |
+| `--blob-archive-enabled=false` | Disables the optional blob archive configuration |
 
----
-# Exasol Host Configuration
+Choose a VM size and region supported by your Azure subscription and the current Exasol Personal requirements. The command provisions the required cloud infrastructure and installs Exasol Personal. Provisioning may take several minutes.
 
-## Why Kervyn Uses `exacluster.local`
+When installation finishes, retrieve the deployment and connection information:
 
-Kervyn's backend connects to Exasol using the hostname configured in its environment variables.
+```bash
+exasol info
+```
 
-In the current deployment, the Exasol hostname is configured as:
+You can open a database session with:
+
+```bash
+exasol connect
+```
+
+Then test the connection:
+
+```sql
+SELECT 1;
+```
+
+Keep the deployment directory because it contains important deployment configuration and connection information.
+
+### 5. Configure Exasol Personal
+
+After installation:
+
+1. Confirm that the Exasol deployment is running.
+2. Retrieve its connection information using `exasol info`.
+3. Identify the database endpoint hostname or IP address.
+4. Confirm the database port and credentials.
+5. Connect using an Exasol SQL client or another compatible database client.
+6. Verify that SQL queries execute successfully.
+
+Kervyn uses the following database settings:
 
 ```env
 EXASOL_HOST=exacluster.local
+EXASOL_PORT=8563
+EXASOL_USER=sys
+EXASOL_PASSWORD=YOUR_EXASOL_PASSWORD
 ```
 
-This hostname is intentional. It is the hostname that works in the current Exasol environment and should not be replaced with the public IP or cloud VM hostname without verifying that the alternative works.
+Use the credentials generated or configured for your deployment. Do not publish passwords or deployment secrets.
 
-The `.local` hostname can resolve through the network configuration available to the machine running the backend. Its resolution depends on the deployment environment.
+### 6. Create the `exacluster.local` Hostname
 
-### Important Configuration Details
+#### Why Kervyn uses `exacluster.local`
 
-- If the Kervyn backend runs on the same machine or network where `exacluster.local` resolves, retain this hostname.
-- If the backend runs on another VM, make sure that VM can resolve `exacluster.local` and reach Exasol over the required network.
-- If the backend is moved to a different cloud network, the hostname may not resolve automatically. Configure appropriate private DNS or another supported hostname-resolution mechanism.
-- Do not assume that `exacluster.local` will resolve from a developer's laptop or an unrelated public network.
-- Do not replace it with a public IP merely because the application is deployed in Azure. First verify DNS resolution, TCP connectivity, and TLS certificate compatibility.
+In the current Kervyn deployment, the Exasol connection works using the hostname `exacluster.local` rather than connecting directly through the public IP address.
 
-You can test hostname resolution from the backend machine.
+A hostname alias can be created in the operating system's hosts file. This maps the hostname to the actual IP address of the Exasol database endpoint. It is also important to use the hostname expected by the database TLS certificate: connecting through a different hostname or IP address can cause TLS hostname-verification errors.
 
-On Linux:
+#### Step 1: Identify the Exasol database endpoint IP
+
+Retrieve the deployment information:
+
+```bash
+exasol info
+```
+
+Identify the IP address corresponding to the Exasol database endpoint. For a cloud deployment, prefer the appropriate private IP address when the backend and database communicate through the same private network.
+
+Do not assume that the Azure VM's public IP is the correct database endpoint.
+
+#### Step 2: Open the hosts file on the backend machine
+
+The hosts file must be modified on the machine where the Kervyn backend runs.
+
+**Ubuntu/Linux:**
+
+```bash
+sudo nano /etc/hosts
+```
+
+**Windows:**
+
+Open Notepad as Administrator and open:
+
+```text
+C:\Windows\System32\drivers\etc\hosts
+```
+
+If the file is not visible in the file picker, select **All Files**.
+
+#### Step 3: Add the hostname mapping
+
+Add this entry at the end of the hosts file:
+
+```text
+<EXASOL_PRIVATE_IP> exacluster.local
+```
+
+Replace `<EXASOL_PRIVATE_IP>` with the actual IP address of the Exasol database endpoint.
+
+For example, if the verified endpoint IP is `10.0.0.5`:
+
+```text
+10.0.0.5 exacluster.local
+```
+
+The example IP is illustrative only. Use the address belonging to your own deployment. Save the file.
+
+#### Step 4: Verify hostname resolution
+
+On Ubuntu/Linux:
 
 ```bash
 getent hosts exacluster.local
@@ -421,7 +518,9 @@ On Windows PowerShell:
 Resolve-DnsName exacluster.local
 ```
 
-You can also test whether the Exasol port is reachable.
+The hostname should resolve to the IP address entered in the hosts file.
+
+#### Step 5: Test database port connectivity
 
 On Windows:
 
@@ -435,7 +534,182 @@ On Linux:
 nc -vz exacluster.local 8563
 ```
 
-A successful connection test confirms network reachability, but does not by itself confirm that database authentication or TLS validation will succeed.
+A successful test confirms network reachability through the configured hostname. It does not, by itself, confirm database authentication or TLS validation.
+
+**Important:** A hosts-file entry is local to the operating system on which it is created. If the backend runs on another machine or VM, configure the hostname mapping there as well. If the backend is moved to another cloud network, configure suitable private DNS or another supported hostname-resolution mechanism. Do not assume that `exacluster.local` resolves from a developer laptop or an unrelated public network.
+
+### 7. Configure the Kervyn `EXASOL_HOST` Variable
+
+Once `exacluster.local` resolves correctly from the backend machine, configure the `.env` file in the Kervyn project root:
+
+```env
+PORT=4000
+
+EXASOL_HOST=exacluster.local
+EXASOL_PORT=8563
+EXASOL_USER=sys
+EXASOL_PASSWORD=YOUR_EXASOL_PASSWORD
+
+FRONTEND_ORIGIN=http://localhost:5173
+
+SARVAM_API_KEY=YOUR_SARVAM_API_KEY
+SARVAM_MODEL=sarvam-105b
+```
+
+The important setting is:
+
+```env
+EXASOL_HOST=exacluster.local
+```
+
+Do not add a protocol prefix or port number to `EXASOL_HOST`; the port is configured separately. Use the hostname that resolves from the machine running the backend. Restart the backend after changing environment variables.
+
+### 8. Configure the Exasol TLS Certificate
+
+Kervyn expects the Exasol server certificate at:
+
+```text
+server/exasol-server.pem
+```
+
+The repository includes a certificate retrieval utility. With a Node.js version that supports `--env-file`, run this command from the project root:
+
+```bash
+node --env-file=.env server/get-cert.js
+```
+
+The utility retrieves the peer certificate and saves it in PEM format. The backend uses the saved certificate for its Exasol TLS connection.
+
+**Security note:** The retrieval utility disables certificate verification during the initial certificate retrieval. This is only a bootstrap mechanism. Verify the displayed SHA-256 fingerprint through a trusted channel before trusting the certificate. Use a hostname that matches the certificate identity; if the certificate identifies the server as `exacluster.local`, connecting through an unrelated IP address or hostname may cause a certificate hostname mismatch. Do not publish private keys or unverified certificates.
+
+### 9. Initialize the Kervyn Database
+
+The repository includes the database setup script:
+
+```text
+db.sql
+```
+
+Open it using an Exasol-compatible SQL client and execute it against your Exasol database. The script creates the `KERVYN` schema, its tables, and sample demonstration records.
+
+You can open a database session from the Exasol deployment directory:
+
+```bash
+exasol connect
+```
+
+Then execute the statements from `db.sql` using your database client.
+
+Verify the schema:
+
+```sql
+SELECT CURRENT_SCHEMA;
+```
+
+Inspect the created tables and confirm that the sample data has been loaded.
+
+The SQL script contains synthetic demonstration data. It is intended for initial development setup and should not be executed repeatedly against an existing database without checking its effects.
+
+### 10. Manage the Exasol Cloud Deployment
+
+| Command | Purpose |
+|---|---|
+| `exasol info` | Display deployment and connection information |
+| `exasol connect` | Open a SQL session |
+| `exasol shell host` | Open an SSH session to the compute host |
+| `exasol stop` | Stop the deployment's compute instances |
+| `exasol start` | Start the deployment again |
+| `exasol destroy` | Remove the deployment and associated cloud resources |
+
+**Azure cost consideration:** Stopping Exasol Personal stops its compute instances, but storage and networking resources may continue to incur charges. After restarting, check `exasol info` and update the hostname mapping if the database endpoint IP has changed. Use `exasol destroy` only when you intend to remove the deployment and its associated resources.
+
+## Backend API Setup
+
+The Node.js backend uses Express to handle database connectivity, analytics requests, AI query processing, and communication between the frontend and external AI services.
+
+### 1. Install Dependencies
+
+From the project root:
+
+```bash
+npm install
+```
+
+### 2. Configure the Environment
+
+Confirm that the `.env` file contains the API port, Exasol hostname and port, Exasol username and password, allowed frontend origin, and Sarvam AI API key. See **Configure Environment Variables** above.
+
+### 3. Start the Backend
+
+```bash
+npm run server:dev
+```
+
+The backend normally runs at:
+
+```text
+http://localhost:4000
+```
+
+### 4. Verify the API and Database Connection
+
+Open the health endpoint:
+
+```text
+http://localhost:4000/api/health
+```
+
+A successful response should indicate that the API is running and provide database connectivity information. For example:
+
+```json
+{
+  "status": "ok",
+  "database": "KERVYN"
+}
+```
+
+The exact response may contain additional fields depending on the implementation.
+
+### 5. Start the Frontend
+
+Open another terminal in the project root:
+
+```bash
+npm run dev
+```
+
+Vite normally serves the development frontend at:
+
+```text
+http://localhost:5173
+```
+
+Open the displayed local URL in your browser. Make sure `FRONTEND_ORIGIN` matches the origin used by the browser.
+
+### 6. Build the Frontend for Deployment
+
+To create a production frontend build:
+
+```bash
+npm run build
+```
+
+The resulting build can be hosted using a suitable web server or static hosting service. Configure the frontend to communicate with the deployed backend API. Do not expose Exasol credentials or Sarvam API keys in frontend environment variables or browser-side code.
+
+### Azure Application Deployment Notes
+
+The Kervyn backend can run on the same Azure VM as Exasol or on a separate application server.
+
+- Install Node.js and npm on the backend host.
+- Clone the Kervyn repository and install its dependencies.
+- Configure the backend `.env` file.
+- Ensure that the backend host can resolve `exacluster.local` and reach Exasol over the required private network.
+- Restrict Exasol port `8563` to trusted application hosts or private network sources.
+- Allow SSH only from trusted IP addresses.
+- Avoid exposing database access directly to the public internet.
+- If the frontend and backend are hosted separately, configure the frontend to communicate with the backend API rather than connecting directly to Exasol.
+- Use HTTPS for production frontend and API traffic.
+
 
 ---
 
@@ -608,3 +882,4 @@ See the [LICENSE](https://github.com/Rishikesh00760/Kervyn/blob/main/LICENSE) fi
 **Kervyn — Smarter Manufacturing. Better Quality.**
 
 *Transforming PCBA manufacturing data into meaningful quality intelligence.*
+
