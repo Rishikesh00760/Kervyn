@@ -383,6 +383,61 @@ http://localhost:5173
 Open the displayed local URL in your browser.
 
 ---
+# Exasol Host Configuration
+
+## Why Kervyn Uses `exacluster.local`
+
+Kervyn's backend connects to Exasol using the hostname configured in its environment variables.
+
+In the current deployment, the Exasol hostname is configured as:
+
+```env
+EXASOL_HOST=exacluster.local
+```
+
+This hostname is intentional. It is the hostname that works in the current Exasol environment and should not be replaced with the public IP or cloud VM hostname without verifying that the alternative works.
+
+The `.local` hostname can resolve through the network configuration available to the machine running the backend. Its resolution depends on the deployment environment.
+
+### Important Configuration Details
+
+- If the Kervyn backend runs on the same machine or network where `exacluster.local` resolves, retain this hostname.
+- If the backend runs on another VM, make sure that VM can resolve `exacluster.local` and reach Exasol over the required network.
+- If the backend is moved to a different cloud network, the hostname may not resolve automatically. Configure appropriate private DNS or another supported hostname-resolution mechanism.
+- Do not assume that `exacluster.local` will resolve from a developer's laptop or an unrelated public network.
+- Do not replace it with a public IP merely because the application is deployed in Azure. First verify DNS resolution, TCP connectivity, and TLS certificate compatibility.
+
+You can test hostname resolution from the backend machine.
+
+On Linux:
+
+```bash
+getent hosts exacluster.local
+```
+
+On Windows PowerShell:
+
+```powershell
+Resolve-DnsName exacluster.local
+```
+
+You can also test whether the Exasol port is reachable.
+
+On Windows:
+
+```powershell
+Test-NetConnection exacluster.local -Port 8563
+```
+
+On Linux:
+
+```bash
+nc -vz exacluster.local 8563
+```
+
+A successful connection test confirms network reachability, but does not by itself confirm that database authentication or TLS validation will succeed.
+
+---
 
 ## API Documentation
 
