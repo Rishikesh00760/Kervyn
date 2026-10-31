@@ -1,4 +1,3 @@
-
 .aibox {
   --ai-bg: #111111;
   --ai-panel: #17191b;
@@ -46,7 +45,6 @@
   opacity: 0.45;
 }
 
-/* Header */
 
 .ai-header {
   min-height: 76px;
@@ -147,7 +145,6 @@
   background: var(--ai-danger);
 }
 
-/* Shared Kervyn AI logo styling */
 
 .ai-brand-icon img,
 .ai-avatar img,
@@ -159,7 +156,6 @@
   border-radius: inherit;
 }
 
-/* Prevent logo from shrinking */
 
 .ai-brand-icon,
 .ai-avatar,
@@ -186,7 +182,6 @@
   border-color: rgba(101, 214, 173, 0.3);
 }
 
-/* Conversation */
 
 .ai-conversation {
   flex: 1 1 auto;
@@ -313,7 +308,6 @@
   font-size: 11px;
 }
 
-/* Messages */
 
 .ai-message-list {
   padding: 24px 18px;
@@ -435,7 +429,6 @@
   }
 }
 
-/* Charts and metric cards */
 
 .ai-visualizations {
   display: grid;
@@ -554,7 +547,6 @@
   background: rgba(255, 255, 255, 0.025);
 }
 
-/* Composer */
 
 .ai-composer-area {
   flex-shrink: 0;
@@ -677,7 +669,6 @@
   font-size: 10px;
 }
 
-/* Responsive */
 
 @media (max-width: 1100px) {
   .aibox {
@@ -817,7 +808,6 @@
 
 
 
-/* Keep chart and table content within their cards */
 .ai-chart,
 .ai-table-block {
   min-width: 0;
@@ -846,7 +836,6 @@
   max-width: 100%;
 }
 
-/* Horizontally scroll wide charts instead of compressing labels */
 .ai-chart-scroll {
   width: 100%;
   max-width: 100%;
@@ -885,7 +874,6 @@
   text-align: right;
 }
 
-/* Tables */
 .ai-table-scroll {
   width: 100%;
   max-width: 100%;
@@ -941,7 +929,6 @@
   margin: 12px 0 4px;
 }
 
-/* Pie chart layout */
 .ai-pie-layout {
   display: grid;
   grid-template-columns: minmax(140px, 0.8fr) minmax(0, 1.2fr);
@@ -1015,9 +1002,6 @@
   }
 }
 
-/* ========================================
-   KERVYN AI — EXPORT BUTTONS
-   ======================================== */
 
 .ai-export-actions {
   display: flex;
@@ -1059,7 +1043,6 @@
     transform 180ms ease;
 }
 
-/* Hover effect */
 .ai-export-button:hover:not(:disabled) {
   color: #8af0c5;
   background: rgba(101, 214, 173, 0.1);
@@ -1068,19 +1051,16 @@
   transform: translateY(-1px);
 }
 
-/* Click feedback */
 .ai-export-button:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
   box-shadow: none;
 }
 
-/* Keyboard accessibility */
 .ai-export-button:focus-visible {
   outline: 2px solid #65d6ad;
   outline-offset: 3px;
 }
 
-/* Disabled state */
 .ai-export-button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -1088,16 +1068,12 @@
   box-shadow: none;
 }
 
-/* Icons inside export buttons */
 .ai-export-button svg {
   width: 13px;
   height: 13px;
   flex-shrink: 0;
 }
 
-/* ========================================
-   CHART EXPORTS
-   ======================================== */
 
 .ai-chart .ai-export-actions {
   padding-top: 10px;
@@ -1108,9 +1084,6 @@
   background: rgba(101, 214, 173, 0.045);
 }
 
-/* ========================================
-   TABLE EXPORTS
-   ======================================== */
 
 .ai-table-block .ai-chart-heading {
   display: flex;
@@ -1135,9 +1108,6 @@
   margin-left: auto;
 }
 
-/* ========================================
-   METRIC CARD EXPORTS
-   ======================================== */
 
 .ai-metric-card .ai-export-actions {
   justify-content: flex-start;
@@ -1151,9 +1121,6 @@
   font-size: 10px;
 }
 
-/* ========================================
-   CONVERSATION PDF EXPORT
-   ======================================== */
 
 .ai-export-pdf {
   margin-top: 14px;
@@ -1172,9 +1139,6 @@
   box-shadow: 0 4px 18px rgba(101, 214, 173, 0.16);
 }
 
-/* ========================================
-   RESPONSIVE LAYOUT
-   ======================================== */
 
 @media (max-width: 600px) {
   .ai-export-actions {
@@ -1211,7 +1175,6 @@
   }
 }
 
-/* Markdown rendering */
 .ai-message-content {
     line-height: 1.65;
     overflow-wrap: anywhere;
