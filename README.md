@@ -161,7 +161,7 @@ The application includes a dedicated About panel describing the platform, its pu
 
 The following diagram illustrates the overall architecture of Kervyn.
 
-\`\`\`mermaid
+```mermaid
 flowchart TD
     USER[User]
 
@@ -206,7 +206,7 @@ flowchart TD
     VIS --> CHAT
     DB --> API
     API --> DS
-\`\`\`
+```
 
 ### Application Workflow
 
@@ -222,7 +222,7 @@ flowchart TD
 
 ## Repository Structure
 
-\`\`\`text
+```text
 Kervyn/
 │
 ├── server/
@@ -256,7 +256,7 @@ Kervyn/
 ├── package-lock.json
 ├── vite.config.js
 └── README.md
-\`\`\`
+```
 
 ### Important Files
 
@@ -272,8 +272,6 @@ Kervyn/
 | db.sql | Database schema and sample data |
 | vite.config.js | Frontend development configuration |
 | package.json | Project dependencies and scripts |
-
----
 
 ---
 
@@ -763,27 +761,27 @@ The analytics endpoint supports:
 
 Example:
 
-\`\`\`http
+```http
 GET /api/analytics?stage=all&days=30
-\`\`\`
+```
 
 ### AI Chat Request
 
 Example request:
 
-\`\`\`http
+```http
 POST /api/ai/chat
 Content-Type: application/json
-\`\`\`
+```
 
 Request body:
 
-\`\`\`json
+```json
 {
   "message": "Compare defect counts across manufacturing stages",
   "sessionId": null
 }
-\`\`\`
+```
 
 The API returns:
 
